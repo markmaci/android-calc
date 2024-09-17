@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.ui.theme.CalculatorTheme
 import kotlin.math.sqrt
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,12 +30,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
 @Composable
 fun CalculatorApp(modifier: Modifier = Modifier) {
     var display by remember { mutableStateOf("0") }
     var operand by remember { mutableDoubleStateOf(0.0) }
     var operator by remember { mutableStateOf<String?>(null) }
     var waitingForOperand by remember { mutableStateOf(false) }
+
+    val maxDisplayLength = 10
 
     fun calculatePendingOperation() {
         val inputValue = display.toDoubleOrNull() ?: return
@@ -44,7 +50,7 @@ fun CalculatorApp(modifier: Modifier = Modifier) {
                 "*" -> operand * inputValue
                 "/" -> {
                     if (inputValue == 0.0) {
-                        display = "Error"
+                        display = "Error cannot divide by 0"
                         return
                     } else {
                         operand / inputValue
@@ -63,14 +69,21 @@ fun CalculatorApp(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .fillMaxHeight()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(80.dp)
-    ) {
+
+        verticalArrangement = Arrangement.spacedBy(80.dp),
+
+        ) {
         TextField(
             value = display,
-            onValueChange = { },
+            onValueChange = { newValue ->
+                if (newValue.matches(Regex("[0-9]*\\.?[0-9]*"))) {
+                    display = newValue
+                    waitingForOperand = false
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
-            textStyle = MaterialTheme.typography.headlineMedium.copy(fontSize = 60.sp)
+            textStyle = MaterialTheme.typography.headlineMedium.copy(fontSize = 40.sp)
+
         )
         CalculatorButtons(
             onButtonClick = { label ->
@@ -82,7 +95,9 @@ fun CalculatorApp(modifier: Modifier = Modifier) {
                         } else {
                             if (label == "." && display.contains(".")) {
                             } else {
-                                display = if (display == "0" && label != ".") label else display + label
+                                if (display.length < maxDisplayLength) {
+                                    display = if (display == "0" && label != ".") label else display + label
+                                }
                             }
                         }
                     }
@@ -95,12 +110,12 @@ fun CalculatorApp(modifier: Modifier = Modifier) {
                         val value = display.toDoubleOrNull()
                         if (value != null) {
                             if (value >= 0) {
-                                display = sqrt(value).toString()
+                                display = sqrt(value).toString().take(maxDisplayLength)
                             } else {
-                                display = "Error"
+                                display = "Error cannot sqrt - #"
                             }
                         } else {
-                            display = "Error"
+                            display = "Error Input Value"
                         }
                         operator = null
                         waitingForOperand = true
@@ -141,7 +156,12 @@ fun CalculatorButtons(onButtonClick: (String) -> Unit) {
                     onClick = { onButtonClick(label) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(80.dp)
+                        .height(80.dp),
+                    shape = RoundedCornerShape(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.LightGray,
+                        contentColor = Color.Black
+                    )
                 ) {
                     Text(
                         label,
@@ -162,7 +182,13 @@ fun CalculatorButtons(onButtonClick: (String) -> Unit) {
                 onClick = { onButtonClick(label) },
                 modifier = Modifier
                     .weight(weight)
-                    .height(80.dp)
+                    .height(80.dp),
+                shape = RoundedCornerShape(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.LightGray,
+                    contentColor = Color.Black
+                )
+
             ) {
                 Text(
                     label,
@@ -183,7 +209,12 @@ fun CalculatorButtons(onButtonClick: (String) -> Unit) {
             onClick = { onButtonClick("0") },
             modifier = Modifier
                 .weight(2f)
-                .height(80.dp)
+                .height(80.dp),
+            shape = RoundedCornerShape(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.LightGray,
+                contentColor = Color.Black
+            )
         ) {
             Text(
                 "0",
@@ -194,7 +225,12 @@ fun CalculatorButtons(onButtonClick: (String) -> Unit) {
             onClick = { onButtonClick(".") },
             modifier = Modifier
                 .weight(1f)
-                .height(80.dp)
+                .height(80.dp),
+            shape = RoundedCornerShape(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.LightGray,
+                contentColor = Color.Black
+            )
         ) {
             Text(
                 ".",
@@ -205,7 +241,12 @@ fun CalculatorButtons(onButtonClick: (String) -> Unit) {
             onClick = { onButtonClick("=") },
             modifier = Modifier
                 .weight(2f)
-                .height(80.dp)
+                .height(80.dp),
+            shape = RoundedCornerShape(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.LightGray,
+                contentColor = Color.Black
+            )
         ) {
             Text(
                 "=",
